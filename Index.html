@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phiếu Nhận Thử Nghiệm SVIBM</title>
+    <style>
+        /* ================= GIAO DIỆN MẶT BÀN & CÔNG CỤ (CHỈ HIỂN THỊ TRÊN MÀN HÌNH) ================= */
+        body { 
+            font-family: "Times New Roman", Times, serif; 
+            background: #525659; 
+            margin: 0; 
+            padding: 40mm 5mm 15mm 5mm; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+        }
+
+        .toolbar {
+            position: fixed; top: 0; left: 0; width: 100%;
+            background: #f8f9fa; box-shadow: 0 1mm 3mm rgba(0,0,0,0.2);
+            padding: 3mm 5mm; box-sizing: border-box;
+            display: flex; flex-direction: column; gap: 3mm; z-index: 1000;
+            border-bottom: 0.5mm solid #ccc;
+        }
+        .toolbar-row { display: flex; justify-content: center; align-items: center; gap: 4mm; flex-wrap: wrap; }
+        .btn { padding: 2mm 4mm; border: none; border-radius: 1mm; cursor: pointer; font-weight: bold; font-size: 10pt; }
+        .btn-add { background: #17a2b8; color: white; }
+        .btn-print { background: #28a745; color: white; font-size: 11pt; padding: 2mm 8mm; }
+        
+        select { padding: 1.5mm; border-radius: 1mm; font-family: inherit; font-size: 10pt; }
+
+        .signature-tools {
+            background: #eef8ff; padding: 2mm 4mm; border-radius: 1.5mm; border: 0.5pt dashed #0056b3; font-size: 10pt;
+        }
+        .signature-tools label { cursor: pointer; display: flex; align-items: center; gap: 1mm; }
+
+        .a4-page {
+            width: 210mm; min-height: 297mm; background: white; 
+            /* CĂN LỀ CHÍNH XÁC: Trên 5mm, Phải 5mm, Dưới 5mm, Trái 7mm */
+            padding: 5mm 5mm 5mm 7mm; 
+            box-shadow: 0 2mm 5mm rgba(0,0,0,0.5); box-sizing: border-box; position: relative;
+        }
+
+        .a4-page::after {
+            content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; 
+            background-image: repeating-linear-gradient(
+                to bottom, transparent, transparent calc(297mm - 1mm),
+                rgba(255, 0, 0, 0.7) calc(297mm - 1mm), rgba(255, 0, 0, 0.7) 297mm
+            );
+            z-index: 999;
+        }
+
+        /* ================= ĐỊNH DẠNG BẢN IN & NỘI DUNG ================= */
+        .master-wrapper {
+            border: 0.5pt solid #000; 
+            outline: 1pt solid #000; 
+            outline-offset: 2pt; 
+            margin: 3pt;         
+            display: flex; flex-direction: column; 
+            box-sizing: border-box;
+            line-height: 1.2;    
+            font-size: 10pt; 
+            color: #000;
+            
+            /* DÒNG LỆNH MỚI: Ép khung viền luôn luôn kéo dài chạm đáy tờ giấy A4 */
+            min-height: 284mm; 
+        }
+        
+        .section-block { border-bottom: 0.5pt solid #000; }
+        .section-block:last-child { border-bottom: none; } 
+
+        .header-print img { width: 100%; display: block; max-height: 32mm; object-fit: contain; }
+        .header-print { padding: 1mm; }
+
+        .title-print { text-align: center; padding: 1mm 0; }
+        .title-print h1 { font-size: 16pt; margin: 0; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5pt; }
+        .title-print h2 { font-size: 15pt; margin: 0; font-style: italic; font-weight: bold; text-transform: uppercase; }
+        .title-print p { margin: 0; font-size: 10pt; }
+
+        .seamless-table { width: 100%; border-collapse: collapse; }
+        .seamless-table th, .seamless-table td { 
+            border: 0.5pt solid #000; padding: 0.5mm 1mm; vertical-align: middle; word-break: break-word; 
+        }
+        
+        /* Tiêu diệt khoảng trắng thừa do thẻ <p> hoặc <div> ẩn sinh ra khi copy/paste */
+        .seamless-table td p, .seamless-table td div {
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        /* ĐOẠN CODE MỚI THÊM VÀO DƯỚI ĐÂY */
+        .seamless-table td, 
+        .seamless-table th,
+        .seamless-table td * { 
+        font-family: "Times New Roman", Times, serif !important;
+        font-size: 10pt !important; 
+        line-height: normal !important; 
+        }
+    
+    /* Chống nhảy trang (nếu bạn có dùng) */
+    .seamless-table {
+        page-break-inside: avoid;
+        page-break-before: auto;
+        page-break-after: auto;
+    }
+        .seamless-table tbody td:nth-child(5) { text-align: center !important; }
+        
+        .seamless-table tr:first-child th, .seamless-table tr:first-child td { border-top: none; }
+        .seamless-table tr:last-child td { border-bottom: none; }
+        /* Khôi phục nét kẻ đáy cho bảng khi bị chuyển sang trang Phụ lục */
+        #appendixTableContainer .seamless-table tr:last-child td { border-bottom: 0.5pt solid #000; }
+        .seamless-table th:first-child, .seamless-table td:first-child { border-left: none; }
+        .seamless-table th:last-child, .seamless-table td:last-child { border-right: none; }
+
+        .seamless-table td:first-child { position: relative; }
+
+        .del-btn {
+            position: absolute; left: -7mm; top: 50%; transform: translateY(-50%);
+            background: #dc3545; color: white; border: none; border-radius: 50%; 
+            width: 5mm; height: 5mm; line-height: 4.2mm; text-align: center; 
+            cursor: pointer; font-size: 12pt; font-weight: bold; padding: 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+            display: flex; justify-content: center; align-items: center;
+        }
+        .del-btn:hover { background: #c82333; transform: translateY(-50%) scale(1.1); }
+
+        .col-lbl { width: 31%; font-weight: bold; }
+        .col-val { width: 69%; }
+        .seamless-table th { text-align: center; font-weight: bold; background: #fff; }
+        .sub-en { display: block; font-weight: bold; font-style: italic; font-size: 10pt; }
+
+        .footer-print { padding: 1.5mm 1mm; font-size: 10pt; flex-grow: 1; display: flex; flex-direction: column; }
+        .footer-print > p, .footer-print > div { margin-top: 1mm !important; margin-bottom: 1mm !important; line-height: 1.3 !important; }
+        
+        .dotted-line-group { display: flex; align-items: flex-end; margin-bottom: 1mm; }
+        .dotted-line-group .label-text { white-space: nowrap; }
+        .dotted-line-group .dots { flex-grow: 1; border-bottom: 0.5pt dotted #000; margin-left: 2mm; font-weight: bold; text-align: center; padding-bottom: 0.5mm; }
+        .note-text { font-size: 10pt; text-align: justify; margin-top: 1mm; }
+
+        .signatures-print { 
+            display: flex; justify-content: space-evenly; align-items: flex-start;
+            text-align: center; padding: 0.8mm 0 25mm 0; margin: 1mm 0 0 0; 
+            border-top: 0.5pt solid #000; flex-grow: 1; 
+        }
+        .sig-box { flex: 1; position: relative; }
+        .sig-box h5 { margin: 0; font-size: 10pt; font-weight: bold; text-transform: uppercase; }
+        .sig-box p { margin: 0.5mm 0 0 0; font-size: 9pt; font-weight: bold; font-style: italic; text-transform: uppercase; }
+
+        /* Style dòng chữ thông báo Xem phụ lục */
+        .appendix-msg-text {
+            font-size: 11pt;
+            text-align: center;
+        }
+        .appendix-msg-text b {
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .appendix-msg-text i {
+            font-weight: bold;
+            font-style: italic;
+            text-transform: uppercase;
+        }
+
+        /* ================= HIỆU ỨNG NHẬP LIỆU ================= */
+        [contenteditable="true"] { outline: none; transition: background 0.2s; cursor: text; }
+        [contenteditable="true"]:hover { background: #eef8ff; } 
+        [contenteditable="true"]:focus { background: #fffacc; } 
+        
+        [contenteditable="true"]:empty:not(:focus):before {
+            content: attr(data-placeholder); color: #999; font-style: italic; pointer-events: none;
+        }
+
+        input[type="checkbox"] { width: 3.5mm; height: 3.5mm; cursor: pointer; accent-color: #000; margin-top: 0; margin-right: 1mm;}
+        .chk-group { display: flex; align-items: center; margin-bottom: 1mm; }
+
+        /* ================= CẤU HÌNH IN (TỶ LỆ 1:1 TUYỆT ĐỐI) ================= */
+        @media print {
+            body { background: none; padding: 0; }
+            .toolbar, .del-btn, .no-print, .a4-page::after { display: none !important; }
+            
+            .a4-page { box-shadow: none; min-height: auto; width: 100%; padding: 5mm 5mm 5mm 7mm !important; }
+            
+            .master-wrapper, .footer-print { display: block !important; }
+            
+            /* DÒNG LỆNH SỬA LỖI: Ép khung phụ lục phải ẩn đi nếu hệ thống báo không cần dùng tới */
+            #separateAppendixBlock[style*="none"] { display: none !important; }
+            
+            .signatures-print { display: table !important; width: 100%; table-layout: fixed; }
+            .sig-box { display: table-cell !important; vertical-align: top; }
+
+            [contenteditable="true"] { background: none !important; }
+            [contenteditable="true"]:empty:before { display: none !important; }
+            
+            @page { size: A4; margin: 0mm; } 
+            thead { display: table-header-group; }
+            
+            tr, .signatures-print { page-break-inside: avoid; } 
+            /* ÉP TOÀN BỘ CHỮ BỊ DÁN LỖI VỀ ĐÚNG QUY CHUẨN KHI IN PDF */
+            [contenteditable="true"], [contenteditable="true"] * {
+                font-family: "Times New Roman", Times, serif !important;
+                font-size: 10pt !important;
+                color: #000 !important;
+                background-color: transparent !important;
+                line-height: inherit !important;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- THANH CÔNG CỤ TỔNG -->
+    <div class="toolbar no-print">
+        <div class="toolbar-row">
+            <button class="btn btn-add" onclick="addInfoRow()">+ Thêm dòng Thông tin</button>
+            <button class="btn btn-add" onclick="addSampleRow()">+ Thêm dòng Mẫu thử</button>
+            <select id="selPageMode">
+                <option value="AUTO">Tự động ngắt trang (Khuyên dùng)</option>
+                <option value="SAME">Ép in chung 1 trang</option>
+                <option value="NEW_SAMPLE">Ép ngắt Phụ lục Mẫu (Trang 2)</option>
+                <option value="NEW_FOOTER">Ép ngắt Chữ ký (Trang 2)</option>
+            </select>
+            <button class="btn btn-print" onclick="prepareAndPrint()">🖨️ Xuất PDF</button>
+        </div>
+        <div class="toolbar-row signature-tools">
+            <b style="color: #0056b3; margin-right: 2mm;">⚙️ THÊM BỚT ĐẠI DIỆN KÝ:</b>
+            <label><input type="checkbox" class="chk-sig-option" data-vn="CHỦ ĐẦU TƯ" data-en="OWNER" checked onchange="renderSignatures()"> Chủ đầu tư</label>
+            <label><input type="checkbox" class="chk-sig-option" data-vn="TV GIÁM SÁT" data-en="CONSULTANT" checked onchange="renderSignatures()"> TV Giám sát</label>
+            <label><input type="checkbox" class="chk-sig-option" data-vn="NHÀ THẦU" data-en="CONTRACTOR" checked onchange="renderSignatures()"> Nhà thầu</label>
+            <label><input type="checkbox" class="chk-sig-option" data-vn="NHÀ THẦU PHỤ" data-en="SUBCONTRACTOR" onchange="renderSignatures()"> Nhà thầu phụ</label>
+            <label><input type="checkbox" class="chk-sig-option" data-vn="GIAO MẪU" data-en="SUPPLIER" checked onchange="renderSignatures()"> Giao mẫu</label>
+            <label><input type="checkbox" class="chk-sig-option" data-vn="ĐV THÍ NGHIỆM" data-en="LABORATORY" checked onchange="renderSignatures()"> ĐV Thí nghiệm</label>
+        </div>
+    </div>
+
+    <!-- TỜ GIẤY A4 -->
+    <div class="a4-page">
+        
+        <!-- TRANG 1: KHUNG BIÊN BẢN CHÍNH -->
+        <div class="master-wrapper" id="mainFormWrapper">
+            
+            <!-- Logo -->
+            <div class="section-block header-print">
+                <img src="https://1drv.ms/i/c/ed83ed9f136e413e/IQQ40_JDRHcqRLYMbax5aMbXAdUBrm7Vb4cXzg9wBOGv8HI" alt="Logo SVIBM" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'800\' height=\'120\'><rect width=\'100%\' height=\'100%\' fill=\'#f8f9fa\'/><text x=\'50%\' y=\'50%\' dominant-baseline=\'middle\' text-anchor=\'middle\' font-size=\'18\' font-weight=\'bold\'>[LOGO]</text></svg>'">
+            </div>
+
+            <!-- Tiêu đề -->
+            <div class="section-block title-print">
+                <h1>PHIẾU NHẬN MẪU VÀ YÊU CẦU THỬ NGHIỆM</h1>
+                <h2>TESTING SERVICE ACCEPTANCE FORM</h2>
+                <p>Số/ <i style="font-style: italic;">No.</i> : <span contenteditable="true" data-placeholder="Mục này do Phân Viện VLXD miền Nam điền" style="display:inline-block; min-width: 15mm; font-weight:bold; border-bottom: 0.5pt dotted #ccc; padding: 0 1.5mm;"></span> /SVIBM</p>
+            </div>
+
+            <!-- Bảng Thông tin -->
+            <div class="section-block">
+                <table class="seamless-table">
+                    <tbody id="infoBody">
+                        <tr>
+                            <td class="col-lbl" contenteditable="true">
+                                <button class="del-btn no-print" contenteditable="false" onclick="this.closest('tr').remove()" title="Xóa dòng này">-</button>
+                                Đơn vị yêu cầu/ <i>Client</i>
+                            </td>
+                            <td class="col-val" contenteditable="true" data-placeholder="Nhập tên đơn vị yêu cầu..."></td>
+                        </tr>
+                        <tr>
+                            <td class="col-lbl" contenteditable="true">
+                                <button class="del-btn no-print" contenteditable="false" onclick="this.closest('tr').remove()" title="Xóa dòng này">-</button>
+                                Công trình/ <i>Project</i>
+                            </td>
+                            <td class="col-val" contenteditable="true" data-placeholder="Nhập tên công trình..."></td>
+                        </tr>
+                        <tr>
+                            <td class="col-lbl" contenteditable="true">
+                                <button class="del-btn no-print" contenteditable="false" onclick="this.closest('tr').remove()" title="Xóa dòng này">-</button>
+                                Gói thầu/ <i>Package</i>
+                            </td>
+                            <td class="col-val" contenteditable="true" data-placeholder="Nhập tên gói thầu..."></td>
+                        </tr>
+                        <tr>
+                            <td class="col-lbl" contenteditable="true">
+                                <button class="del-btn no-print" contenteditable="false" onclick="this.closest('tr').remove()" title="Xóa dòng này">-</button>
+                                Hạng mục/ <i>Work item</i>
+                            </td>
+                            <td class="col-val" contenteditable="true" data-placeholder="Nhập tên hạng mục..."></td>
+                        </tr>
+                        <tr>
+                            <td class="col-lbl" contenteditable="true">
+                                <button class="del-btn no-print" contenteditable="false" onclick="this.closest('tr').remove()" title="Xóa dòng này">-</button>
+                                Địa điểm/ <i>Location</i>
+                            </td>
+                            <td class="col-val" contenteditable="true" data-placeholder="Nhập địa điểm..."></td>
+                        </tr>
+                        <tr>
+                            <td class="col-lbl" contenteditable="true">
+                                <button class="del-btn no-print" contenteditable="false" onclick="this.closest('tr').remove()" title="Xóa dòng này">-</button>
+                                Chủ đầu tư/ <i>Owner</i>
+                            </td>
+                            <td class="col-val" contenteditable="true" data-placeholder="Nhập tên đơn vị chủ đầu tư..."></td>
+                        </tr>
+                        <tr>
+                            <td class="col-lbl" contenteditable="true">
+                                <button class="del-btn no-print" contenteditable="false" onclick="this.closest('tr').remove()" title="Xóa dòng này">-</button>
+                                Tư vấn giám sát/ <i>Consultant</i>
+                            </td>
+                            <td class="col-val" contenteditable="true" data-placeholder="Nhập tên đơn vị tư vấn giám sát..."></td>
+                        </tr>
+                        <tr>
+                            <td class="col-lbl" contenteditable="true">
+                                <button class="del-btn no-print" contenteditable="false" onclick="this.closest('tr').remove()" title="Xóa dòng này">-</button>
+                                Nhà thầu/ <i>Contractor</i>
+                            </td>
+                            <td class="col-val" contenteditable="true" data-placeholder="Nhập tên nhà thầu..."></td>
+                        </tr>
+                        <tr>
+                            <td class="col-lbl" contenteditable="true">
+                                <button class="del-btn no-print" contenteditable="false" onclick="this.closest('tr').remove()" title="Xóa dòng này">-</button>
+                                Nhà thầu phụ/ <i>Subcontractor</i>
+                            </td>
+                            <td class="col-val" contenteditable="true" data-placeholder="Nhập tên nhà thầu phụ..."></td>
+                        </tr>
+                        <tr>
+                            <td class="col-lbl" contenteditable="true">
+                                <button class="del-btn no-print" contenteditable="false" onclick="this.closest('tr').remove()" title="Xóa dòng này">-</button>
+                                Nguồn cung cấp/ <i>Sample origin</i>
+                            </td>
+                            <td class="col-val" contenteditable="true" data-placeholder="Nhập nguồn cung cấp..."></td>
+                        </tr>
+                        <tr>
+                            <td class="col-lbl" contenteditable="true">
+                                <button class="del-btn no-print" contenteditable="false" onclick="this.closest('tr').remove()" title="Xóa dòng này">-</button>
+                                Vị trí lấy mẫu/ <i>Sampling location</i>
+                            </td>
+                            <td class="col-val" contenteditable="true" data-placeholder="Nhập vị trí lấy mẫu..."></td>
+                        </tr>
+                        <tr id="lastInfoRow">
+                            <td class="col-lbl">Ngày nhận mẫu/ <i>Received date</i></td>
+                            <td class="col-val" contenteditable="true" data-placeholder="dd/mm/yyyy"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- VÙNG CHỨA BẢNG MẪU TRÊN TRANG 1 -->
+            <div class="section-block" id="inlineSampleBlock">
+                <table class="seamless-table" id="sampleTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 6%;">STT<span class="sub-en">No.</span></th>
+                            <th style="width: 25%;">Tên mẫu<span class="sub-en">Sample name</span></th>
+                            <th style="width: 10%;">Số lượng<span class="sub-en">Quantity</span></th>
+                            <th style="width: 24%;">Chỉ tiêu thí nghiệm<span class="sub-en">Characteristic</span></th>
+                            <th style="width: 18%;">Phương pháp thử<span class="sub-en">Test method</span></th>
+                            <th style="width: 17%;">Ghi chú<span class="sub-en">Note</span></th>
+                        </tr>
+                    </thead>
+                    <tbody id="sampleBody">
+                        <tr>
+                            <td style="text-align: center; font-weight: bold;" class="stt-cell">
+                                <button class="del-btn no-print" contenteditable="false" onclick="deleteSampleRow(this)" title="Xóa dòng này">-</button>
+                                1
+                            </td>
+                            <td contenteditable="true" data-placeholder="Nhập tên mẫu..."></td>
+                            <td contenteditable="true" style="text-align: center;"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- DÒNG CHỮ DYNAMIC "XEM PHỤ LỤC" (MẶC ĐỊNH ẨN) -->
+            <div id="appendixPlaceholder" class="section-block" style="display: none; text-align: center; padding: 5mm 0;">
+                <div class="appendix-msg-text">
+                    <b>XEM PHỤ LỤC</b> / <i><b>SEE APPENDIX</b></i>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <!-- KHUNG XANH: Phần Thông tin Trả kết quả & Ghi chú (Có thể nhảy sang Phụ lục) -->
+            <div id="deliveryInfoBlock" style="padding: 1mm 1mm; font-size: 10pt; display: flex; flex-direction: column;">
+                
+                <div style="margin-bottom: 1mm; line-height: 1.2;">
+                    Kết quả được trả theo hình thức/ <i style="font-weight: normal;">Please select your preferred method of delivery</i>:
+                    <div style="margin-top: 1mm; margin-left: 5mm;">
+                        <div style="display: flex; align-items: center; gap: 3mm; flex-wrap: wrap;">
+                            <div class="chk-group" style="margin-bottom: 0;">
+                                <label style="display: flex; align-items: center; cursor: pointer;">
+                                    <input type="checkbox" checked> Trả trực tiếp/ <i>Received directly</i>
+                                </label>
+                            </div>
+                            <div class="chk-group" style="margin-bottom: 0;">
+                                <label style="display: flex; align-items: center; cursor: pointer;">
+                                    <input type="checkbox" checked> Điện thoại/ <i>Tel</i>: &nbsp;
+                                </label>
+                                <span contenteditable="true" data-placeholder="Nhập SĐT..." style="border-bottom: 0.5pt dotted #ccc; min-width: 25mm; display:inline-block;"></span>
+                            </div>
+                            <div class="chk-group" style="margin-bottom: 0; flex-grow: 1;">
+                                <label style="display: flex; align-items: center; cursor: pointer;">
+                                    <input type="checkbox"> Email: &nbsp;
+                                </label>
+                                <span contenteditable="true" data-placeholder="Nhập Email..." style="border-bottom: 0.5pt dotted #ccc; min-width: 25mm; display:inline-block; flex-grow: 1;"></span>
+                            </div>
+                        </div>
+                        <div class="chk-group" style="margin-top: 2.5mm; margin-bottom: 0; align-items: flex-start;">
+                            <label style="display: flex; align-items: center; cursor: pointer; white-space: nowrap; margin-top: 0.5mm;">
+                                <input type="checkbox"> Thư/ <i>Mail</i>: &nbsp;
+                            </label>
+                            <span contenteditable="true" data-placeholder="Nhập địa chỉ nhận thư chi tiết..." style="border-bottom: 0.5pt dotted #ccc; flex-grow: 1; min-height: 5mm; display: block; outline: none; word-break: break-word; line-height: 1.4; padding-bottom: 1mm;"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dotted-line-group">
+                    <div class="label-text">Vào ngày/ <i>On:</i></div>
+                    <div class="dots" contenteditable="true"></div>
+                </div>
+                <div class="dotted-line-group">
+                    <div class="label-text">Phí thí nghiệm tạm tính là/ <i>The estimated testing fee is:</i></div>
+                    <div class="dots" contenteditable="true"></div>
+                </div>
+                <div class="dotted-line-group">
+                    <div class="label-text">Khách hàng đã trả trước số tiền/ <i>Amount prepaid by the client is:</i></div>
+                    <div class="dots" contenteditable="true"></div>
+                </div>
+
+                <div class="note-text">
+                    Trong trường hợp thử nghiệm có trở ngại cần thay đổi, Phân viện Vật liệu xây dựng miền Nam (SVIBM) và khách hàng sẽ thông báo, bàn bạc để cùng nhau giải quyết/ <i>In case of any issues arising during the testing process, SVIBM and the client will notify and discuss with each other to resolve them.</i>
+                </div>
+            </div>
+
+            <!-- KHUNG ĐỎ: Phần Chữ ký (Khóa chặt dưới đáy Trang 1) -->
+            <!-- Lệnh margin-top: auto; sẽ tự động ép đẩy khối chữ ký này xuống sát đáy tờ giấy -->
+            <div class="signatures-print" id="signaturesBlock" style="margin-top: auto;">
+                <!-- JS sẽ tự động sinh chữ ký vào đây -->
+            </div> 
+        </div>
+
+        <!-- TRANG 2: KHUNG KHU VỰC PHỤ LỤC RỜI (MẶC ĐỊNH ẨN) -->
+        <div id="separateAppendixBlock" class="master-wrapper" style="display: none; margin-top: 5mm; page-break-before: always;">
+            <div class="section-block" style="padding: 4mm 0;">
+                <h3 style="text-align: center; color: #000; border: none; margin: 0; text-transform: uppercase; font-size: 13pt; font-weight: bold;">PHỤ LỤC: DANH SÁCH MẪU VẬT LIỆU THỬ NGHIỆM</h3>
+            </div>
+            <div id="appendixTableContainer">
+                <!-- JS tự động chuyển bảng mẫu sang đây nếu tràn trang -->
+            </div>
+        </div>
+         
+    </div>
+
+    <script>
+        function addInfoRow() {
+            let tbody = document.getElementById('infoBody');
+            let tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="col-lbl" contenteditable="true">
+                    <button class="del-btn no-print" contenteditable="false" onclick="this.closest('tr').remove()">-</button>
+                    <span data-placeholder="Nhập thông tin..."></span>
+                </td>
+                <td class="col-val" contenteditable="true" data-placeholder="Nhập nội dung..."></td>
+            `;
+            let lastRow = document.getElementById('lastInfoRow');
+            tbody.insertBefore(tr, lastRow);
+        }
+
+        function addSampleRow() {
+            let tbody = document.getElementById('sampleBody');
+            let tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="text-align: center; font-weight: bold;" class="stt-cell">
+                    <button class="del-btn no-print" contenteditable="false" onclick="deleteSampleRow(this)">-</button>
+                </td>
+                <td contenteditable="true" data-placeholder="Gõ tên mẫu..."></td>
+                <td contenteditable="true" style="text-align: center;"></td>
+                <td contenteditable="true"></td>
+                <td contenteditable="true"></td>
+                <td contenteditable="true"></td>
+            `;
+            tbody.appendChild(tr);
+            updateSTT();
+        }
+
+        function deleteSampleRow(btn) {
+            btn.closest('tr').remove();
+            updateSTT(); 
+        }
+
+        function updateSTT() {
+            let cells = document.querySelectorAll('.stt-cell');
+            cells.forEach((cell, index) => { 
+                let btnHtml = '<button class="del-btn no-print" contenteditable="false" onclick="deleteSampleRow(this)">-</button>';
+                cell.innerHTML = btnHtml + (index + 1); 
+            });
+        }
+
+        function renderSignatures() {
+            let container = document.getElementById('signaturesBlock'); 
+            container.innerHTML = ''; 
+            let checkboxes = document.querySelectorAll('.chk-sig-option:checked'); 
+            
+            checkboxes.forEach(chk => {
+                let vn = chk.getAttribute('data-vn');
+                let en = chk.getAttribute('data-en');
+                
+                let defaultName = "";
+                let editableAttr = 'contenteditable="true"'; // Mặc định cho phép người dùng gõ tên
+
+                // Lệnh điều kiện: Nếu là cột ĐV Thí nghiệm thì tự điền tên và KHÓA CHẶT LẠI
+                if (vn === "ĐV THÍ NGHIỆM") {
+                    defaultName = "Phạm Tuấn Anh";
+                    editableAttr = 'contenteditable="false"'; // Lệnh khóa không cho sửa
+                }
+
+                container.innerHTML += `
+                    <div class="sig-box">
+                        <h5 contenteditable="true">${vn}</h5>
+                        <p contenteditable="true">${en}</p>
+                        <div ${editableAttr} style="margin-top: 20mm; font-size: 10pt; font-weight: bold;">${defaultName}</div>
+                    </div>
+                `;
+            });
+        }
+        
+        window.addEventListener('DOMContentLoaded', renderSignatures);
+
+        function prepareAndPrint() {
+            let mode = document.getElementById("selPageMode").value;
+            let inlineSampleBlock = document.getElementById("inlineSampleBlock");
+            let appendixPlaceholder = document.getElementById("appendixPlaceholder");
+            let separateAppendixBlock = document.getElementById("separateAppendixBlock");
+            let appendixTableContainer = document.getElementById("appendixTableContainer");
+            let sampleTable = document.getElementById("sampleTable");
+            let mainWrapper = document.getElementById("mainFormWrapper");
+            
+            // Gọi 2 khối vừa tách
+            let deliveryInfoBlock = document.getElementById("deliveryInfoBlock");
+            let signaturesBlock = document.getElementById("signaturesBlock");
+            
+            // 1. Khôi phục mọi thứ về ban đầu trước khi tính toán
+            inlineSampleBlock.appendChild(sampleTable);
+            mainWrapper.insertBefore(deliveryInfoBlock, signaturesBlock); 
+            mainWrapper.appendChild(signaturesBlock); 
+            
+            inlineSampleBlock.style.display = "block";
+            appendixPlaceholder.style.display = "none";
+            separateAppendixBlock.style.display = "none";
+            deliveryInfoBlock.style.borderTop = "none";
+
+            // ========================================================
+            // BƯỚC 1.5: TỰ ĐỘNG ẨN CÁC THÔNG TIN TRỐNG KHI IN
+            // 1. Ẩn các dòng trống trong Bảng thông tin khách hàng
+            document.querySelectorAll('#infoBody tr').forEach(row => {
+                if(row.id === 'lastInfoRow') return; // Lệnh "Miễn tử" cho dòng Ngày nhận mẫu
+                let valCell = row.querySelector('.col-val');
+                // Nếu ô nội dung trống trơn (không có chữ)
+                if(valCell && valCell.textContent.trim() === '') {
+                    row.style.display = "none"; // Ẩn dòng đó đi
+                    row.dataset.hiddenEmpty = "true"; // Đánh dấu lại để lát nữa in xong gọi nó về
+                }
+            });
+
+            // 2. Ẩn các dòng chấm chấm trống ở Khung Xanh (Trả kết quả)
+            document.querySelectorAll('.dotted-line-group').forEach(group => {
+                let label = group.querySelector('.label-text').textContent;
+                if(label.includes('Vào ngày')) return; // Lệnh "Miễn tử" cho dòng Vào ngày/ On:
+                let dotCell = group.querySelector('.dots');
+                if(dotCell && dotCell.textContent.trim() === '') {
+                    group.style.display = "none";
+                    group.dataset.hiddenEmpty = "true";
+                }
+            });
+            // ========================================================
+
+            // 2. Kỹ thuật đo đạc 2 bước
+            let isSampleOverflow = false;
+            let isDeliveryOverflow = false;
+
+            if (mode === "AUTO") {
+                let ruler = document.createElement("div");
+                ruler.style.height = "284mm"; 
+                ruler.style.position = "absolute";
+                ruler.style.visibility = "hidden";
+                document.body.appendChild(ruler);
+                
+                // Đo lần 1: Toàn bộ Trang 1 có tràn không?
+                if (mainWrapper.offsetHeight > ruler.offsetHeight) {
+                    isSampleOverflow = true; // Tràn -> Chuyển Bảng mẫu đi
+                    
+                    // Giả lập ẩn Bảng mẫu đi
+                    inlineSampleBlock.style.display = "none";
+                    appendixPlaceholder.style.display = "block";
+                    
+                    // Đo lần 2: Trừ Bảng mẫu ra rồi, Thông tin KH + Khung Xanh + Khung đỏ có còn bị tràn không?
+                    if (mainWrapper.offsetHeight > ruler.offsetHeight) {
+                        isDeliveryOverflow = true; // Vẫn tràn -> Chuyển tiếp Khung Xanh đi
+                    }
+                    
+                    // Trả lại trạng thái
+                    inlineSampleBlock.style.display = "block";
+                    appendixPlaceholder.style.display = "none";
+                }
+                document.body.removeChild(ruler);
+            }
+
+            // 3. Thực thi cơ chế bẻ trang
+            if(mode === "NEW_SAMPLE" || isSampleOverflow) {
+                appendixTableContainer.appendChild(sampleTable); 
+                inlineSampleBlock.style.display = "none";        
+                appendixPlaceholder.style.display = "block";    
+                separateAppendixBlock.style.display = "block";   
+            } 
+
+            if (mode === "NEW_FOOTER" || isDeliveryOverflow) {
+                // Nhấc CHỈ Khung Xanh ném sang trang Phụ lục, Khung đỏ vẫn ở lại Trang 1
+                separateAppendixBlock.appendChild(deliveryInfoBlock);
+                separateAppendixBlock.style.display = "block";
+                
+                // Kẻ thêm 1 đường viền nhỏ phía trên Khung xanh khi nó nằm ở Phụ lục cho đẹp
+                deliveryInfoBlock.style.borderTop = "0.5pt solid #000"; 
+            }
+
+            // Gọi lệnh in PDF
+            setTimeout(() => { 
+                window.print(); 
+            }, 100);
+        }
+
+        // TỰ ĐỘNG KHÔI PHỤC VỀ MÀN HÌNH NHẬP LIỆU SAU KHI IN XONG
+        window.onafterprint = function() {
+            let inlineSampleBlock = document.getElementById("inlineSampleBlock");
+            let sampleTable = document.getElementById("sampleTable");
+            let mainWrapper = document.getElementById("mainFormWrapper");
+            let deliveryInfoBlock = document.getElementById("deliveryInfoBlock");
+            let signaturesBlock = document.getElementById("signaturesBlock");
+            
+            // Trả Bảng mẫu và Khung Xanh về đúng vị trí cũ trên Trang 1
+            inlineSampleBlock.appendChild(sampleTable);
+            mainWrapper.insertBefore(deliveryInfoBlock, signaturesBlock);
+            mainWrapper.appendChild(signaturesBlock); 
+            
+            inlineSampleBlock.style.display = "block";
+            document.getElementById("appendixPlaceholder").style.display = "none";
+            document.getElementById("separateAppendixBlock").style.display = "none";
+            
+            deliveryInfoBlock.style.borderTop = "none"; 
+            updateSTT();
+
+            // ========================================================
+            // KHÔI PHỤC CÁC DÒNG ĐÃ BỊ TÀNG HÌNH ĐỂ HIỂN THỊ TRÊN MÀN HÌNH
+            document.querySelectorAll('[data-hidden-empty="true"]').forEach(el => {
+                el.style.display = ""; // Xóa lệnh ẩn
+                delete el.dataset.hiddenEmpty; // Xóa dấu vết
+            });
+            // ========================================================
+        };
+    </script>
+</body>
+</html>
