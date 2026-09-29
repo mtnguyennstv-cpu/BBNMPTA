@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Phiếu Nhận Thử Nghiệm SVIBM</title>
+    <title>Phiếu Nhận Thử Nghiệm SVIBM - Giao Diện Word A4</title>
     <style>
         /* ================= GIAO DIỆN MẶT BÀN & CÔNG CỤ (CHỈ HIỂN THỊ TRÊN MÀN HÌNH) ================= */
         body { 
@@ -96,13 +96,18 @@
         font-size: 10pt !important; 
         line-height: normal !important; 
         }
+
+        /* Độ rộng các hàng trong bảng Thông tin Khách hàng tối thiểu 6mm */
+        #infoBody tr {
+            height: 9mm;
+        }
     
-    /* Chống nhảy trang (nếu bạn có dùng) */
-    .seamless-table {
-        page-break-inside: avoid;
-        page-break-before: auto;
-        page-break-after: auto;
-    }
+        /* Chống nhảy trang */
+        .seamless-table {
+            page-break-inside: avoid;
+            page-break-before: auto;
+            page-break-after: auto;
+        }
         .seamless-table tbody td:nth-child(5) { text-align: center !important; }
         
         .seamless-table tr:first-child th, .seamless-table tr:first-child td { border-top: none; }
@@ -123,6 +128,17 @@
             display: flex; justify-content: center; align-items: center;
         }
         .del-btn:hover { background: #c82333; transform: translateY(-50%) scale(1.1); }
+
+        /* Nút cộng màu xanh hiển thị ngay trong bảng */
+        .add-btn-inline {
+            position: absolute; left: -7mm; top: 50%; transform: translateY(-50%);
+            background: #28a745; color: white; border: none; border-radius: 50%; 
+            width: 5mm; height: 5mm; line-height: 4.2mm; text-align: center; 
+            cursor: pointer; font-size: 12pt; font-weight: bold; padding: 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+            display: flex; justify-content: center; align-items: center;
+        }
+        .add-btn-inline:hover { background: #218838; transform: translateY(-50%) scale(1.1); }
 
         .col-lbl { width: 31%; font-weight: bold; }
         .col-val { width: 69%; }
@@ -176,9 +192,9 @@
         /* ================= CẤU HÌNH IN (TỶ LỆ 1:1 TUYỆT ĐỐI) ================= */
         @media print {
             body { background: none; padding: 0; }
-            .toolbar, .del-btn, .no-print, .a4-page::after { display: none !important; }
+            .toolbar, .del-btn, .add-btn-inline, .no-print, .a4-page::after { display: none !important; }
             
-            .a4-page { box-shadow: none; min-height: auto; width: 100%; padding: 5mm 5mm 5mm 7mm !important; }
+            .a4-page { box-shadow: none; min-height: auto; width: 210mm !important; height: 297mm !important; padding: 5mm 5mm 5mm 7mm !important; }
             
             .master-wrapper, .footer-print { display: block !important; }
             
@@ -191,7 +207,7 @@
             [contenteditable="true"] { background: none !important; }
             [contenteditable="true"]:empty:before { display: none !important; }
             
-            @page { size: A4; margin: 0mm; } 
+            @page { size: 210mm 297mm; margin: 0mm; } 
             thead { display: table-header-group; }
             
             tr, .signatures-print { page-break-inside: avoid; } 
@@ -212,12 +228,7 @@
         <div class="toolbar-row">
             <button class="btn btn-add" onclick="addInfoRow()">+ Thêm dòng Thông tin</button>
             <button class="btn btn-add" onclick="addSampleRow()">+ Thêm dòng Mẫu thử</button>
-            <select id="selPageMode">
-                <option value="AUTO">Tự động ngắt trang (Khuyên dùng)</option>
-                <option value="SAME">Ép in chung 1 trang</option>
-                <option value="NEW_SAMPLE">Ép ngắt Phụ lục Mẫu (Trang 2)</option>
-                <option value="NEW_FOOTER">Ép ngắt Chữ ký (Trang 2)</option>
-            </select>
+            <!-- Nút tùy chọn đã được xóa vì code hoàn toàn tự động -->
             <button class="btn btn-print" onclick="prepareAndPrint()">🖨️ Xuất PDF</button>
         </div>
         <div class="toolbar-row signature-tools">
@@ -244,7 +255,7 @@
 
             <!-- Tiêu đề -->
             <div class="section-block title-print">
-                <h1>PHIẾU NHẬN MẪU VÀ YÊU CẦU THỬ NGHIỆM</h1>
+                <h1>PHIẾU NHẬN THỬ NGHIỆM</h1>
                 <h2>TESTING SERVICE ACCEPTANCE FORM</h2>
                 <p>Số/ <i style="font-style: italic;">No.</i> : <span contenteditable="true" data-placeholder="Mục này do Phân Viện VLXD miền Nam điền" style="display:inline-block; min-width: 15mm; font-weight:bold; border-bottom: 0.5pt dotted #ccc; padding: 0 1.5mm;"></span> /SVIBM</p>
             </div>
@@ -331,7 +342,10 @@
                             <td class="col-val" contenteditable="true" data-placeholder="Nhập vị trí lấy mẫu..."></td>
                         </tr>
                         <tr id="lastInfoRow">
-                            <td class="col-lbl">Ngày nhận mẫu/ <i>Received date</i></td>
+                            <td class="col-lbl">
+                                <button class="add-btn-inline no-print" contenteditable="false" onclick="addInfoRow()" title="Thêm dòng thông tin">+</button>
+                                Ngày nhận mẫu/ <i>Received date</i>
+                            </td>
                             <td class="col-val" contenteditable="true" data-placeholder="dd/mm/yyyy"></td>
                         </tr>
                     </tbody>
@@ -354,7 +368,7 @@
                     <tbody id="sampleBody">
                         <tr>
                             <td style="text-align: center; font-weight: bold;" class="stt-cell">
-                                <button class="del-btn no-print" contenteditable="false" onclick="deleteSampleRow(this)" title="Xóa dòng này">-</button>
+                                <button class="add-btn-inline no-print" contenteditable="false" onclick="addSampleRow()" title="Thêm dòng mẫu thử">+</button>
                                 1
                             </td>
                             <td contenteditable="true" data-placeholder="Nhập tên mẫu..."></td>
@@ -376,7 +390,7 @@
 
             <!-- Footer -->
             <!-- KHUNG XANH: Phần Thông tin Trả kết quả & Ghi chú (Có thể nhảy sang Phụ lục) -->
-            <div id="deliveryInfoBlock" style="padding: 1mm 1mm; font-size: 10pt; display: flex; flex-direction: column;">
+            <div id="deliveryInfoBlock" style="padding: 1mm 1mm; font-size: 10pt; display: flex; flex-direction: column; margin-top: auto;">
                 
                 <div style="margin-bottom: 1mm; line-height: 1.2;">
                     Kết quả được trả theo hình thức/ <i style="font-weight: normal;">Please select your preferred method of delivery</i>:
@@ -428,8 +442,8 @@
             </div>
 
             <!-- KHUNG ĐỎ: Phần Chữ ký (Khóa chặt dưới đáy Trang 1) -->
-            <!-- Lệnh margin-top: auto; sẽ tự động ép đẩy khối chữ ký này xuống sát đáy tờ giấy -->
-            <div class="signatures-print" id="signaturesBlock" style="margin-top: auto;">
+            <!-- Lệnh margin-top: 0; để dính chặt vào phần 4 -->
+            <div class="signatures-print" id="signaturesBlock" style="margin-top: 0;">
                 <!-- JS sẽ tự động sinh chữ ký vào đây -->
             </div> 
         </div>
@@ -452,7 +466,7 @@
             let tr = document.createElement('tr');
             tr.innerHTML = `
                 <td class="col-lbl" contenteditable="true">
-                    <button class="del-btn no-print" contenteditable="false" onclick="this.closest('tr').remove()">-</button>
+                    <button class="del-btn no-print" contenteditable="false" onclick="this.closest('tr').remove()" title="Xóa dòng này">-</button>
                     <span data-placeholder="Nhập thông tin..."></span>
                 </td>
                 <td class="col-val" contenteditable="true" data-placeholder="Nhập nội dung..."></td>
@@ -466,7 +480,7 @@
             let tr = document.createElement('tr');
             tr.innerHTML = `
                 <td style="text-align: center; font-weight: bold;" class="stt-cell">
-                    <button class="del-btn no-print" contenteditable="false" onclick="deleteSampleRow(this)">-</button>
+                    <button class="del-btn no-print" contenteditable="false" onclick="deleteSampleRow(this)" title="Xóa dòng này">-</button>
                 </td>
                 <td contenteditable="true" data-placeholder="Gõ tên mẫu..."></td>
                 <td contenteditable="true" style="text-align: center;"></td>
@@ -486,7 +500,14 @@
         function updateSTT() {
             let cells = document.querySelectorAll('.stt-cell');
             cells.forEach((cell, index) => { 
-                let btnHtml = '<button class="del-btn no-print" contenteditable="false" onclick="deleteSampleRow(this)">-</button>';
+                let btnHtml = '';
+                // Dòng đầu tiên (số 1) sẽ luôn có dấu cộng màu xanh
+                if (index === 0) {
+                    btnHtml = '<button class="add-btn-inline no-print" contenteditable="false" onclick="addSampleRow()" title="Thêm dòng mẫu thử">+</button>';
+                } else {
+                    // Từ dòng 2 trở đi sẽ có dấu trừ màu đỏ để xóa
+                    btnHtml = '<button class="del-btn no-print" contenteditable="false" onclick="deleteSampleRow(this)" title="Xóa dòng này">-</button>';
+                }
                 cell.innerHTML = btnHtml + (index + 1); 
             });
         }
@@ -500,20 +521,18 @@
                 let vn = chk.getAttribute('data-vn');
                 let en = chk.getAttribute('data-en');
                 
+                // Lệnh điều kiện: Nếu là cột ĐV Thí nghiệm thì tự điền tên Mai Trọng Nguyên
                 let defaultName = "";
-                let editableAttr = 'contenteditable="true"'; // Mặc định cho phép người dùng gõ tên
-
-                // Lệnh điều kiện: Nếu là cột ĐV Thí nghiệm thì tự điền tên và KHÓA CHẶT LẠI
                 if (vn === "ĐV THÍ NGHIỆM") {
                     defaultName = "Phạm Tuấn Anh";
-                    editableAttr = 'contenteditable="false"'; // Lệnh khóa không cho sửa
                 }
 
+                // margin-top: 25mm; chính là lệnh đẩy tên tụt xuống 25mm để chừa chỗ ký
                 container.innerHTML += `
                     <div class="sig-box">
                         <h5 contenteditable="true">${vn}</h5>
                         <p contenteditable="true">${en}</p>
-                        <div ${editableAttr} style="margin-top: 20mm; font-size: 10pt; font-weight: bold;">${defaultName}</div>
+                        <div contenteditable="true" style="margin-top: 20mm; font-size: 10pt; font-weight: bold;">${defaultName}</div>
                     </div>
                 `;
             });
@@ -522,7 +541,6 @@
         window.addEventListener('DOMContentLoaded', renderSignatures);
 
         function prepareAndPrint() {
-            let mode = document.getElementById("selPageMode").value;
             let inlineSampleBlock = document.getElementById("inlineSampleBlock");
             let appendixPlaceholder = document.getElementById("appendixPlaceholder");
             let separateAppendixBlock = document.getElementById("separateAppendixBlock");
@@ -573,44 +591,43 @@
             let isSampleOverflow = false;
             let isDeliveryOverflow = false;
 
-            if (mode === "AUTO") {
-                let ruler = document.createElement("div");
-                ruler.style.height = "284mm"; 
-                ruler.style.position = "absolute";
-                ruler.style.visibility = "hidden";
-                document.body.appendChild(ruler);
+            let ruler = document.createElement("div");
+            ruler.style.height = "284mm"; 
+            ruler.style.position = "absolute";
+            ruler.style.visibility = "hidden";
+            document.body.appendChild(ruler);
+            
+            // Đo lần 1: Toàn bộ Trang 1 có tràn không?
+            if (mainWrapper.offsetHeight > ruler.offsetHeight) {
+                isSampleOverflow = true; // Tràn -> Chuyển Bảng mẫu đi
                 
-                // Đo lần 1: Toàn bộ Trang 1 có tràn không?
+                // Giả lập ẩn Bảng mẫu đi
+                inlineSampleBlock.style.display = "none";
+                appendixPlaceholder.style.display = "block";
+                
+                // Đo lần 2: Trừ Bảng mẫu ra rồi, Thông tin KH + Khung Xanh + Khung đỏ có còn bị tràn không?
                 if (mainWrapper.offsetHeight > ruler.offsetHeight) {
-                    isSampleOverflow = true; // Tràn -> Chuyển Bảng mẫu đi
-                    
-                    // Giả lập ẩn Bảng mẫu đi
-                    inlineSampleBlock.style.display = "none";
-                    appendixPlaceholder.style.display = "block";
-                    
-                    // Đo lần 2: Trừ Bảng mẫu ra rồi, Thông tin KH + Khung Xanh + Khung đỏ có còn bị tràn không?
-                    if (mainWrapper.offsetHeight > ruler.offsetHeight) {
-                        isDeliveryOverflow = true; // Vẫn tràn -> Chuyển tiếp Khung Xanh đi
-                    }
-                    
-                    // Trả lại trạng thái
-                    inlineSampleBlock.style.display = "block";
-                    appendixPlaceholder.style.display = "none";
+                    isDeliveryOverflow = true; // Vẫn tràn -> Chuyển tiếp Khung Xanh và Khung đỏ đi
                 }
-                document.body.removeChild(ruler);
+                
+                // Trả lại trạng thái
+                inlineSampleBlock.style.display = "block";
+                appendixPlaceholder.style.display = "none";
             }
+            document.body.removeChild(ruler);
 
             // 3. Thực thi cơ chế bẻ trang
-            if(mode === "NEW_SAMPLE" || isSampleOverflow) {
+            if(isSampleOverflow) {
                 appendixTableContainer.appendChild(sampleTable); 
                 inlineSampleBlock.style.display = "none";        
                 appendixPlaceholder.style.display = "block";    
                 separateAppendixBlock.style.display = "block";   
             } 
 
-            if (mode === "NEW_FOOTER" || isDeliveryOverflow) {
-                // Nhấc CHỈ Khung Xanh ném sang trang Phụ lục, Khung đỏ vẫn ở lại Trang 1
+            if (isDeliveryOverflow) {
+                // Nhấc CẢ Khung Xanh và Khung đỏ ném sang trang Phụ lục
                 separateAppendixBlock.appendChild(deliveryInfoBlock);
+                separateAppendixBlock.appendChild(signaturesBlock);
                 separateAppendixBlock.style.display = "block";
                 
                 // Kẻ thêm 1 đường viền nhỏ phía trên Khung xanh khi nó nằm ở Phụ lục cho đẹp
@@ -631,7 +648,7 @@
             let deliveryInfoBlock = document.getElementById("deliveryInfoBlock");
             let signaturesBlock = document.getElementById("signaturesBlock");
             
-            // Trả Bảng mẫu và Khung Xanh về đúng vị trí cũ trên Trang 1
+            // Trả Bảng mẫu, Khung Xanh và Khung Đỏ về đúng vị trí cũ trên Trang 1
             inlineSampleBlock.appendChild(sampleTable);
             mainWrapper.insertBefore(deliveryInfoBlock, signaturesBlock);
             mainWrapper.appendChild(signaturesBlock); 
